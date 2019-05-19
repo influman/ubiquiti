@@ -1,0 +1,616 @@
+{
+	"plugin_id": "ubiquiti",
+	"name_fr": "Ubiquiti",
+	"icon": "ubiquiti.png",
+	"version": "1.0",
+	"creation_date": "2019-04-22",
+	"modification_date": "2019-04-30",
+	"author": "Influman",
+	"description_fr": "Monitoring du réseau <a target='_blank' href='https://unifi-sdn.ui.com/'>Unifi</a> d'<a target='_blank' href='https://www.ui.com/'>Ubiquiti</a>",
+	"description_en": "Unifi Monitoring - Ubiquiti",
+	"forum_link": "https://forum.eedomus.com/viewtopic.php?f=13&t=8360&p=78576",
+	"parameters":
+	[
+		{
+			"parameter": "IP", 
+			"description": "Controller IP",
+			"xtype": "textfield",
+			"default_value": "192.168.",
+			"field": "width:150, allowBlank:false, maskRe:/[0-9.]/, regex:/^(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9])\\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[1-9]|0)\\.(25[0-5]|2[0-4][0-9]|[0-1]{1}[0-9]{2}|[1-9]{1}[0-9]{1}|[0-9])$/, regexText:'Adresse IP invalide [0-255].[0-255].[0-255].[0-255]'"
+		},
+		{
+			"parameter": "LOGIN",
+			"description": "Login",
+			"default_value": "",
+			"xtype": "textfield",
+			"field": "allowBlank: false, width: 150"
+		},
+		{
+			"parameter": "PASS",
+			"description": "Password",
+			"default_value": "",
+			"xtype": "textfield",
+			"field": "allowBlank: false, width: 150"
+		},
+		{
+			"parameter": "SITE",
+			"description": "Site UniFi monitoré",
+			"default_value": "default",
+			"xtype": "textfield",
+			"field": "allowBlank: false, width: 100"
+		},
+		{
+			"parameter": "LANG",
+			"description": "Langage",
+			"default_value": "EN",
+			"xtype": "combo",
+			"field": "width:100, allowBlank:false, store:[['FR', 'Français'], ['EN', 'English']], triggerAction: 'all'"
+		},
+		{
+			"parameter": "CAPCLOUD",
+			"description": "Installer les capteurs Version CloudKey ?",
+			"default_value": "1",
+			"xtype": "combo",
+			"field": "width:100, allowBlank:false, store:[['1', 'Oui'], ['0', 'Non']], triggerAction: 'all'"
+		},
+		{
+			"parameter": "CAPGW",
+			"description": "Installer les capteurs Gateway ?",
+			"default_value": "1",
+			"xtype": "combo",
+			"field": "width:100, allowBlank:false, store:[['1', 'Oui'], ['0', 'Non']], triggerAction: 'all'"
+		},
+		{
+			"parameter": "CAPSW",
+			"description": "Installer les capteurs Switches ?",
+			"default_value": "1",
+			"xtype": "combo",
+			"field": "width:100, allowBlank:false, store:[['1', 'Oui'], ['0', 'Non']], triggerAction: 'all'"
+		},
+		{
+			"parameter": "CAPAP",
+			"description": "Installer les capteurs Access Points ?",
+			"default_value": "1",
+			"xtype": "combo",
+			"field": "width:100, allowBlank:false, store:[['1', 'Oui'], ['0', 'Non']], triggerAction: 'all'"
+		}
+	],
+	"scripts":
+	[
+		{
+			"name": "ubiquiti.php"
+		}
+	],
+	"devices":
+	[
+		{
+			"device_id": "statut",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - Global Status",
+			"icon": "ubiquiti.png",
+			"utilisation_id": "35",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "string",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=getstatus&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/STATUS",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "apenable",
+			"parent_id": "statut",
+			"module_id": "41",
+			"type": "http",
+			"name_fr": "UniFi - AP Control",
+			"icon": "ubiap.png",
+			"utilisation_id": "43",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "list",
+				"ignore_errors": 3,
+				"RAW_URL": "",
+				"RAW_XPATH": "",
+				"POLLING": "5"
+			},
+			"values":
+			[
+				{ "value": "1", "description": "Enable All AP", "icon": "ubiap.png", "http_url": "http://localhost/script/?exec=ubiquiti.php", "http_type": "GET",  "http_params": "&server=[VAR1]&lang=[VAR2]&site=[VAR3]&action=ap&value=enable&apid=all" },
+				{ "value": "2", "description": "Disable All AP", "icon": "ubiapoff.png", "http_url": "http://localhost/script/?exec=ubiquiti.php", "http_type": "GET",  "http_params": "&server=[VAR1]&lang=[VAR2]&site=[VAR3]&action=ap&value=disable&apid=all"},
+				{ "value": "11", "description": "Enable AP #1", "icon": "ubiap.png", "http_url": "http://localhost/script/?exec=ubiquiti.php", "http_type": "GET",  "http_params": "&server=[VAR1]&lang=[VAR2]&site=[VAR3]&action=ap&value=enable&apid=000000000000000000000024"},
+				{ "value": "12", "description": "Disable AP #2", "icon": "ubiapoff.png", "http_url": "http://localhost/script/?exec=ubiquiti.php", "http_type": "GET",  "http_params": "&server=[VAR1]&lang=[VAR2]&site=[VAR3]&action=ap&value=disable&apid=000000000000000000000024"}
+			]
+		},
+		{
+			"device_id": "wlan",
+			"parent_id": "statut",
+			"module_id": "41",
+			"type": "http",
+			"name_fr": "UniFi - WLAN Control",
+			"icon": "ubiwlan.png",
+			"utilisation_id": "43",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "list",
+				"ignore_errors": 3,
+				"RAW_URL": "",
+				"RAW_XPATH": "",
+				"POLLING": "5"
+			},
+			"values":
+			[
+				{ "value": "1", "description": "Enable All WLAN", "icon": "ubiwlan.png", "http_url": "http://localhost/script/?exec=ubiquiti.php", "http_type": "GET",  "http_params": "&server=[VAR1]&lang=[VAR2]&site=[VAR3]&action=wlan&value=enable&wlanid=all" },
+				{ "value": "2", "description": "Disable All WLAN", "icon": "ubiwlanoff.png", "http_url": "http://localhost/script/?exec=ubiquiti.php", "http_type": "GET",  "http_params": "&server=[VAR1]&lang=[VAR2]&site=[VAR3]&action=wlan&value=disable&wlanid=all"},
+				{ "value": "11", "description": "Enable WLAN #1", "icon": "ubiwlan.png", "http_url": "http://localhost/script/?exec=ubiquiti.php", "http_type": "GET",  "http_params": "&server=[VAR1]&lang=[VAR2]&site=[VAR3]&action=wlan&value=enable&wlanid=000000000000000000000024"},
+				{ "value": "12", "description": "Disable WLAN #2", "icon": "ubiwlanoff.png", "http_url": "http://localhost/script/?exec=ubiquiti.php", "http_type": "GET",  "http_params": "&server=[VAR1]&lang=[VAR2]&site=[VAR3]&action=wlan&value=disable&wlanid=000000000000000000000024"}
+			]
+		},
+		{
+			"device_id": "block",
+			"parent_id": "statut",
+			"module_id": "41",
+			"type": "http",
+			"name_fr": "UniFi - Block/Unblock Client device",
+			"icon": "ubiblock.png",
+			"utilisation_id": "43",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "list",
+				"ignore_errors": 3,
+				"RAW_URL": "",
+				"RAW_XPATH": "",
+				"POLLING": "5"
+			},
+			"values":
+			[
+				{ "value": "1", "description": "Block Client device #1", "icon": "ubiblock.png", "http_url": "http://localhost/script/?exec=ubiquiti.php", "http_type": "GET",  "http_params": "&server=[VAR1]&lang=[VAR2]&site=[VAR3]&action=block&value=aa:bb:cc:dd:ee:ff" },
+				{ "value": "2", "description": "UnBlock Client device #1", "icon": "ubiunblock.png", "http_url": "http://localhost/script/?exec=ubiquiti.php", "http_type": "GET",  "http_params": "&server=[VAR1]&lang=[VAR2]&site=[VAR3]&action=unblock&value=aa:bb:cc:dd:ee:ff"}
+			]
+		},
+		{
+			"device_id": "pck",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPCLOUD",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - Controller Cloudkey Version",
+			"icon": "ubiquiti.png",
+			"utilisation_id": "35",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "string",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/SYSINFO/PCK_VERSION",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "pckup",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPCLOUD",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - Controller Cloudkey Update",
+			"icon": "ubiquiti.png",
+			"utilisation_id": "35",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "string",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/SYSINFO/PCK_UPDATE",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "cloudkey",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPCLOUD",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - Cloudkey Firmware version",
+			"icon": "ubiquiti.png",
+			"utilisation_id": "35",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "string",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/SYSINFO/CLDK_VERSION",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "cloudup",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPCLOUD",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - Cloudkey Firmware Update",
+			"icon": "ubiquiti.png",
+			"utilisation_id": "35",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "string",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/SYSINFO/CLDK_UPDATE",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "newalarms",
+			"parent_id": "statut",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - New Alarms",
+			"icon": "ubiquiti.png",
+			"utilisation_id": "35",
+			"value_unit": " ",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "float",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/NUM_NEW_ALARMS",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "wwwstatus",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPGW",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - Internet Status",
+			"icon": "ubiinternet.png",
+			"utilisation_id": "35",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "string",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/WWW/SYS_STATUS",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "wwwlatency",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPGW",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - Internet Latency",
+			"icon": "ubiinternet.png",
+			"utilisation_id": "35",
+			"value_unit": "ms",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "float",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/WWW/LATENCY",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "wwwup",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPGW",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - Internet Upload Debit",
+			"icon": "ubiinternet.png",
+			"utilisation_id": "35",
+			"value_unit": "Mb/s",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "float",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/WWW/XPUT_UP",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "wwwdown",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPGW",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - Internet Download debit",
+			"icon": "ubiinternet.png",
+			"utilisation_id": "35",
+			"value_unit": "Mb/s",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "float",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/WWW/XPUT_DOWN",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "gwstatus",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPGW",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - WAN Status",
+			"icon": "ubigw.png",
+			"utilisation_id": "35",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "string",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/WAN/SYS_STATUS",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "gwcpu",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPGW",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - Gateway CPU",
+			"icon": "ubigw.png",
+			"utilisation_id": "35",
+			"value_unit": "%",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "float",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/WAN/CPU",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "gwmem",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPGW",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - Gateway MEM",
+			"icon": "ubigw.png",
+			"utilisation_id": "35",
+			"value_unit": "%",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "float",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/WAN/MEM",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "gateway",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPGW",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - Gateway Clients",
+			"icon": "ubigw.png",
+			"utilisation_id": "35",
+			"value_unit": " ",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "float",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/WAN/NUM_STA",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "switch",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPSW",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - Switches",
+			"icon": "ubisw.png",
+			"utilisation_id": "35",
+			"value_unit": " ",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "float",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/LAN/NUM_ADOPTED",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "lanstatus",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPSW",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - LAN Status",
+			"icon": "ubisw.png",
+			"utilisation_id": "35",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "string",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/LAN/SYS_STATUS",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "wired",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPSW",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - Wired",
+			"icon": "ubiwired.png",
+			"utilisation_id": "35",
+			"value_unit": " ",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "float",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/LAN/NUM_USER",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "ap",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPAP",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - Access Points",
+			"icon": "ubiap.png",
+			"utilisation_id": "35",
+			"value_unit": " ",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "float",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/WLAN/NUM_ADOPTED",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "wlanstatus",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPAP",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - WIFI Status",
+			"icon": "ubiap.png",
+			"utilisation_id": "35",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "string",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/WLAN/SYS_STATUS",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "wificli",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPAP",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - Wireless",
+			"icon": "ubiclients.png",
+			"utilisation_id": "35",
+			"value_unit": " ",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "float",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/WLAN/NUM_USER",
+				"POLLING": "5"
+			}
+		},
+		{
+			"device_id": "wifiguest",
+			"parent_id": "statut",
+			"create" : "plugin.parameters.CAPAP",
+			"module_id": "51",
+			"type": "http",
+			"name_fr": "UniFi - Guests",
+			"icon": "ubiguest.png",
+			"utilisation_id": "35",
+			"value_unit": " ",
+			"parameters":
+			{
+				"VAR1": "https,plugin.parameters.IP:8443,plugin.parameters.LOGIN,plugin.parameters.PASS",
+				"VAR2": "plugin.parameters.LANG",
+				"VAR3": "plugin.parameters.SITE",
+				"value_type": "float",
+				"ignore_errors": 3,
+				"RAW_URL": "http://localhost/script/?exec=ubiquiti.php&action=polling&server=[VAR1]&lang=[VAR2]&site=[VAR3]",
+				"RAW_XPATH": "/UNIFI/WLAN/NUM_GUEST",
+				"POLLING": "5"
+			}
+		}		
+	]
+}
